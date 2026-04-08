@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mietvertrag – rostock-auto-mieten.de</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+.page-wrap { padding-top: 64px; }
+.form-page { max-width: 800px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+.form-section { background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 2rem; margin-bottom: 1.5rem; }
+.form-section-alt { background: var(--paper-dark); border: 1px solid var(--border); border-radius: 6px; padding: 2rem; margin-bottom: 1.5rem; }
+.form-section-title { font-family: "Playfair Display", serif; font-size: 1.05rem; font-weight: 700; color: var(--accent); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
+.form-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 600px) { .form-cols { grid-template-columns: 1fr; } }
+.sig-wrap { border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--paper); position: relative; overflow: hidden; }
+canvas#sig { width: 100%; height: 160px; display: block; touch-action: none; }
+.sig-clear { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: 1px solid var(--border); border-radius: 3px; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--ink-muted); cursor: pointer; }
+.sig-clear:hover { border-color: var(--accent); color: var(--accent); }
+.sig-note { font-size: 0.8rem; color: var(--ink-muted); margin-top: 0.5rem; line-height: 1.5; }
+.conditions-box { background: var(--paper); border: 1px solid var(--border); border-radius: 4px; padding: 1.25rem 1.5rem; font-size: 0.875rem; color: var(--ink-soft); line-height: 1.75; max-height: 300px; overflow-y: auto; }
+.conditions-box ol { padding-left: 1.25rem; }
+.conditions-box li { margin-bottom: 0.4rem; }
+.check-row { display: flex; align-items: flex-start; gap: 0.75rem; margin-top: 1rem; }
+.check-row input[type=checkbox] { margin-top: 0.2rem; flex-shrink: 0; width: 18px; height: 18px; accent-color: var(--accent); }
+.check-row label { font-size: 0.875rem; color: var(--ink-soft); line-height: 1.5; }
+.page-title { font-family: "Playfair Display", serif; font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: var(--ink); margin-bottom: 0.5rem; }
+.page-intro { font-size: 0.95rem; color: var(--ink-soft); line-height: 1.7; margin-bottom: 2rem; max-width: 640px; }
+#msg { padding: 1rem 1.5rem; border-radius: 6px; font-size: 0.9rem; font-weight: 500; display: none; margin-top: 1rem; }
+#msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+#msg.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+</style>
+</head><body>
+<nav>
+  <a href="index.html" class="nav-brand">Autovermietung Rostock</a>
+  <ul class="nav-links">
+    <li><a href="index.html#fahrzeug">Fahrzeug</a></li>
+    <li><a href="index.html#preise">Preise</a></li>
+    <li><a href="wochenende.html">Wochenende</a></li>
+    <li><a href="flughafen.html">Flughafen</a></li>
+    <li><a href="index.html#abholort">Standort</a></li>
+    <li><a href="index.html#anfrage" class="nav-cta">Anfrage senden</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="form-page">
+    <p class="section-label">Dokument</p>
+    <h1 class="page-title">Mietvertrag</h1>
+    <div class="divider"></div>
+    <p class="page-intro">Bitte füllen Sie dieses Formular vollständig aus und unterschreiben Sie digital. Anschließend wird der Vertrag als PDF auf Ihr Gerät heruntergeladen und automatisch an Josef Czerwinski per E-Mail gesendet. Josef bestätigt Ihnen die Mietdaten vorab per WhatsApp.</p>
+
+    <form id="mietForm" novalidate>
+      <!-- MIETER SECTION -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mieterdaten
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="vorname">Vorname *</label>
+            <input type="text" id="vorname" name="vorname" required autocomplete="given-name" placeholder="Max">
+          </div>
+          <div class="form-group">
+            <label for="nachname">Nachname *</label>
+            <input type="text" id="nachname" name="nachname" required autocomplete="family-name" placeholder="Mustermann">
+          </div>
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="geburtsdatum">Geburtsdatum *</label>
+            <input type="date" id="geburtsdatum" name="geburtsdatum" required autocomplete="bday">
+          </div>
+          <div class="form-group">
+            <label for="telefon">Telefon *</label>
+            <input type="tel" id="telefon" name="telefon" required autocomplete="tel" placeholder="+49 176 ...">
+          </div>
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="strasse">Straße &amp; Hausnummer *</label>
+            <input type="text" id="strasse" name="strasse" required autocomplete="street-address" placeholder="Beispielstr. 12">
+          </div>
+          <div class="form-cols" style="gap:0.5rem">
+            <div class="form-group">
+              <label for="plz">PLZ *</label>
+              <input type="text" id="plz" name="plz" required autocomplete="postal-code" placeholder="18057">
+            </div>
+            <div class="form-group">
+              <label for="ort">Ort *</label>
+              <input type="text" id="ort" name="ort" required autocomplete="address-level2" placeholder="Rostock">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">E-Mail *</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="max@beispiel.de">
+        </div>
+      </div>
+      <!-- FUEHRERSCHEIN SECTION -->
+      <div class="form-section-alt">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Führerscheindaten
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="fs_nummer">Führerscheinnummer *</label>
+            <input type="text" id="fs_nummer" name="fs_nummer" required placeholder="B0X0000000">
+          </div>
+          <div class="form-group">
+            <label for="fs_klasse">Klasse *</label>
+            <input type="text" id="fs_klasse" name="fs_klasse" required value="B">
+          </div>
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="fs_behoerde">Ausstellungsbehörde *</label>
+            <input type="text" id="fs_behoerde" name="fs_behoerde" required placeholder="Stadt Rostock">
+          </div>
+          <div class="form-group">
+            <label for="fs_datum">Ausstellungsdatum *</label>
+            <input type="date" id="fs_datum" name="fs_datum" required>
+          </div>
+        </div>
+      </div>
+      <!-- MIETDATEN SECTION -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Mietdaten
+        </div>
+        <p style="font-size:0.82rem;color:var(--ink-muted);margin-bottom:1rem;">Die Mietdaten werden vorab per WhatsApp mit Josef vereinbart und hier eingetragen.</p>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="abholdat">Abholdatum *</label>
+            <input type="date" id="abholdat" name="abholdat" required>
+          </div>
+          <div class="form-group">
+            <label for="abholzeit">Abholzeit *</label>
+            <input type="time" id="abholzeit" name="abholzeit" required>
+          </div>
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="rueckgabedat">Rückgabedatum *</label>
+            <input type="date" id="rueckgabedat" name="rueckgabedat" required>
+          </div>
+          <div class="form-group">
+            <label for="rueckgabezeit">Rückgabezeit *</label>
+            <input type="time" id="rueckgabezeit" name="rueckgabezeit" required>
+          </div>
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="gesamtpreis">Vereinbarter Gesamtpreis (€) *</label>
+            <input type="number" id="gesamtpreis" name="gesamtpreis" required min="0" step="1" placeholder="z.B. 59">
+          </div>
+          <div class="form-group">
+            <label for="kaution">Kaution (€) *</label>
+            <input type="number" id="kaution" name="kaution" required value="100" min="0" step="1">
+          </div>
+        </div>
+      </div>
+      <!-- BEDINGUNGEN SECTION -->
+      <div class="form-section-alt">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Mietbedingungen
+        </div>
+        <div class="conditions-box">
+          <ol>
+            <li>Mindestalter 21 Jahre; Führerschein Klasse B seit mindestens 2 Jahren im Besitz.</li>
+            <li>200&nbsp;km pro Tag inklusive; jeder weitere Kilometer wird zusätzlich berechnet (Preis auf Anfrage).</li>
+            <li>Vollkaskoversicherung inklusive. Bei grober Fahrlässigkeit oder Verstoß gegen die Mietbedingungen trägt der Mieter die Selbstbeteiligung.</li>
+            <li>Kraftstoff: Benzin Super. Das Fahrzeug ist mit dem gleichen Tankstand wie bei Übergabe zurückzugeben. Fehlender Kraftstoff wird mit einem Aufschlag berechnet.</li>
+            <li>Auslandsfahrten sind nur mit vorheriger schriftlicher Genehmigung des Vermieters gestattet.</li>
+            <li>Nichtraucherfahrzeug. Zuwiderhandlung führt zu einer Reinigungspauschale.</li>
+            <li>Schäden, Unfälle oder Pannen sind unverzüglich zu melden: +49&nbsp;176&nbsp;75192451.</li>
+            <li>Die Kaution wird nach ordnungsgemäßer Rückgabe des Fahrzeugs vollständig zurückerstattet.</li>
+            <li>Zahlung: Bar, Überweisung oder PayPal bei Übergabe des Fahrzeugs.</li>
+            <li>Übergabe- und Rückgabeprotokoll wird vor Ort gemeinsam ausgefüllt und von beiden Parteien unterschrieben.</li>
+          </ol>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="bedingungenCheck" name="bedingungenCheck" required>
+          <label for="bedingungenCheck">Ich habe die Mietbedingungen gelesen und akzeptiere sie ausdrücklich als Grundlage dieses Mietvertrags. *</label>
+        </div>
+      </div>
+      <!-- UNTERSCHRIFT SECTION -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Unterschrift
+        </div>
+        <label style="font-size:0.78rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:0.6rem;">Unterschrift des Mieters *</label>
+        <div class="sig-wrap">
+          <canvas id="sig"></canvas>
+          <button type="button" class="sig-clear" id="sigClear">Löschen</button>
+        </div>
+        <p class="sig-note">Mit Ihrer Unterschrift bestätigen Sie die Kenntnisnahme und Akzeptanz der Mietbedingungen sowie die Korrektheit Ihrer Angaben. Zeichnen Sie mit Maus oder Finger.</p>
+      </div>
+
+      <!-- SUBMIT -->
+      <button type="submit" class="btn btn-primary form-submit" id="submitBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Vertrag absenden &amp; herunterladen
+      </button>
+      <div id="msg"></div>
+
+    </form>
+  </div>
+</div>
+<!-- FOOTER -->
+<footer>
+  <p><strong>rostock-auto-mieten.de</strong> &mdash; Josef Czerwinski &middot; Ulmenstraße 2, 18057 Rostock</p>
+  <p>Tel: <a href="tel:+4917675192451">+49 176 75192451</a> &middot; E-Mail: <a href="mailto:josefczerwi@t-online.de">josefczerwi@t-online.de</a></p>
+  <p style="margin-top:0.5rem;"><a href="index.html">Zurück zur Startseite</a></p>
+</footer>
+
+<script>
+// Signature Pad Setup
+const canvas = document.getElementById('sig');
+const signaturePad = new SignaturePad(canvas, {
+  backgroundColor: 'rgba(248,246,241,1)',
+  penColor: '#1a1a1a',
+  minWidth: 1,
+  maxWidth: 3
+});
+
+function resizeCanvas() {
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * ratio;
+  canvas.height = rect.height * ratio;
+  canvas.getContext('2d').scale(ratio, ratio);
+  signaturePad.clear();
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', resizeCanvas);
+
+document.getElementById('sigClear').addEventListener('click', () => signaturePad.clear());
+
+// Form Submit
+document.getElementById('mietForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const msg = document.getElementById('msg');
+  msg.className = '';
+  msg.style.display = 'none';
+
+  if (signaturePad.isEmpty()) {
+    msg.textContent = 'Bitte unterschreiben Sie das Formular.';
+    msg.className = 'error';
+    return;
+  }
+
+  const get = id => document.getElementById(id).value.trim();
+  const vorname = get('vorname'), nachname = get('nachname');
+  const name = vorname + ' ' + nachname;
+
+  btn.disabled = true;
+  btn.textContent = 'Wird erstellt ...';
+
+  try {
+    const sigImg = signaturePad.toDataURL('image/png');
+    const pdfBytes = await generatePDF(sigImg);
+    const pdfBase64 = 'data:application/pdf;base64,' + pdfBytes;
+
+    // Download locally
+    const a = document.createElement('a');
+    a.href = pdfBase64;
+    a.download = 'mietvertrag-' + name.toLowerCase().replace(/\s+/g, '-') + '.pdf';
+    a.click();
+
+    // Send via mail.php
+    const resp = await fetch('mail.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email: get('email'), pdf_base64: pdfBase64 })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      msg.textContent = 'Vertrag erfolgreich gesendet. Eine Kopie wurde an ' + get('email') + ' geschickt.';
+      msg.className = 'success';
+    } else {
+      msg.textContent = 'E-Mail-Versand fehlgeschlagen: ' + (data.error || 'Unbekannter Fehler');
+      msg.className = 'error';
+    }
+  } catch (err) {
+    msg.textContent = 'Fehler beim Erstellen des PDFs: ' + err.message;
+    msg.className = 'error';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Vertrag absenden &amp; herunterladen';
+});
+
+async function generatePDF(sigImg) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const get = id => document.getElementById(id).value.trim();
+  const formatDate = s => s ? s.split('-').reverse().join('.') : '';
+  const formatDateTime = (d, t) => formatDate(d) + (t ? ', ' + t + ' Uhr' : '');
+
+  const pageW = 210, margin = 20, colW = (pageW - margin * 2 - 10) / 2;
+  let y = 20;
+
+  // Header band
+  doc.setFillColor(43, 74, 122);
+  doc.rect(0, 0, pageW, 38, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(255, 255, 255);
+  doc.text('MIETVERTRAG', margin, 20);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('rostock-auto-mieten.de | Josef Czerwinski', margin, 28);
+  doc.text('Datum: ' + new Date().toLocaleDateString('de-DE'), pageW - margin, 28, { align: 'right' });
+  y = 50;
+
+  // Two-column: Vermieter | Mieter
+  const drawBox = (x, bw, title, rows) => {
+    doc.setFillColor(245, 243, 238);
+    doc.setDrawColor(216, 210, 197);
+    doc.roundedRect(x, y, bw, 6 + rows.length * 7 + 8, 2, 2, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(43, 74, 122);
+    doc.text(title.toUpperCase(), x + 4, y + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    rows.forEach((row, i) => {
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(row[0], x + 4, y + 14 + i * 7);
+      doc.setFontSize(8.5);
+      doc.setTextColor(26, 26, 26);
+      doc.text(row[1], x + 4, y + 19 + i * 7);
+    });
+    return 6 + rows.length * 7 + 12;
+  };
+
+  const vermieterRows = [
+    ['Name', 'Josef Czerwinski'],
+    ['Adresse', 'Ulmenstra\u00dfe 2, 18057 Rostock'],
+    ['Telefon', '+49 176 75192451'],
+    ['E-Mail', 'josefczerwi@t-online.de'],
+  ];
+  const mieterRows = [
+    ['Name', get('vorname') + ' ' + get('nachname')],
+    ['Adresse', get('strasse') + ', ' + get('plz') + ' ' + get('ort')],
+    ['Telefon', get('telefon')],
+    ['E-Mail', get('email')],
+  ];
+  const hV = drawBox(margin, colW, 'Vermieter', vermieterRows);
+  drawBox(margin + colW + 10, colW, 'Mieter', mieterRows);
+  y += Math.max(hV, hV) + 8;
+
+  // Geburtsdatum + Führerschein
+  const fsRows = [
+    ['Geburtsdatum', formatDate(get('geburtsdatum'))],
+    ['F\u00fchrerscheinnummer', get('fs_nummer')],
+    ['Klasse', get('fs_klasse')],
+    ['Ausstellungsbeh\u00f6rde', get('fs_behoerde')],
+    ['Ausstellungsdatum', formatDate(get('fs_datum'))],
+  ];
+  const hFs = drawBox(margin, pageW - margin * 2, 'F\u00fchrerscheindaten', fsRows);
+  y += hFs + 4;
+
+  // Fahrzeug
+  const fzRows = [
+    ['Fahrzeug', 'KIA Venga 2014'],
+    ['Kennzeichen', 'HRO-JC 123'],
+    ['Kraftstoff', 'Benzin Super'],
+    ['Inkl. Kilometer', '200 km pro Tag'],
+  ];
+  const hFz = drawBox(margin, pageW - margin * 2, 'Fahrzeugdaten', fzRows);
+  y += hFz + 4;
+
+  // Mietdaten
+  const mietRows = [
+    ['Abholung', formatDateTime(get('abholdat'), get('abholzeit'))],
+    ['R\u00fcckgabe', formatDateTime(get('rueckgabedat'), get('rueckgabezeit'))],
+    ['Gesamtpreis', get('gesamtpreis') + ' \u20ac'],
+    ['Kaution', get('kaution') + ' \u20ac'],
+  ];
+  const hM = drawBox(margin, pageW - margin * 2, 'Mietdaten', mietRows);
+  y += hM + 4;
+
+  // Mietbedingungen
+  if (y > 200) { doc.addPage(); y = 20; }
+  doc.setFillColor(43, 74, 122);
+  doc.setDrawColor(43, 74, 122);
+  doc.roundedRect(margin, y, pageW - margin * 2, 7, 1, 1, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(255, 255, 255);
+  doc.text('MIETBEDINGUNGEN', margin + 4, y + 5);
+  y += 11;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(40, 40, 40);
+  const conditions = [
+    '1. Mindestalter 21 Jahre; F\u00fchrerschein Klasse B seit mindestens 2 Jahren.',
+    '2. 200 km/Tag inklusive. Jeder weitere Kilometer wird zus\u00e4tzlich berechnet.',
+    '3. Vollkaskoversicherung inklusive. Bei grober Fahrl\u00e4ssigkeit tr\u00e4gt der Mieter die Selbstbeteiligung.',
+    '4. Kraftstoff: Benzin Super. R\u00fcckgabe mit gleichem Tankstand wie bei \u00dcbergabe.',
+    '5. Keine Auslandsfahrten ohne vorherige schriftliche Genehmigung des Vermieters.',
+    '6. Nichtraucherfahrzeug. Zuwiderhandlung f\u00fchrt zu Reinigungskosten.',
+    '7. Sch\u00e4den unverz\u00fcglich melden: +49 176 75192451.',
+    '8. Kaution wird nach ordnungsgem\u00e4\u00dfer R\u00fcckgabe vollst\u00e4ndig zur\u00fcckerstattet.',
+    '9. Zahlung: Bar, \u00dcberweisung oder PayPal bei \u00dcbergabe.',
+    '10. \u00dcbergabe- und R\u00fcckgabeprotokoll wird vor Ort ausgef\u00fcllt und unterschrieben.',
+  ];
+  conditions.forEach(c => {
+    doc.text(c, margin + 2, y);
+    y += 6;
+  });
+  y += 4;
+
+  // Unterschrift
+  if (y > 220) { doc.addPage(); y = 20; }
+  doc.setDrawColor(216, 210, 197);
+  doc.setFillColor(248, 246, 241);
+  const sigBoxH = 45;
+  doc.roundedRect(margin, y, pageW - margin * 2, sigBoxH, 2, 2, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(43, 74, 122);
+  doc.text('UNTERSCHRIFT DES MIETERS', margin + 4, y + 6);
+  // embed signature image
+  try {
+    doc.addImage(sigImg, 'PNG', margin + 4, y + 8, 80, 28);
+  } catch(e) {}
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(80, 80, 80);
+  const sigName = get('vorname') + ' ' + get('nachname');
+  doc.text(sigName + ' | ' + new Date().toLocaleDateString('de-DE'), margin + 4, y + sigBoxH - 4);
+  y += sigBoxH + 8;
+
+  // Footer
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFillColor(43, 74, 122);
+    doc.rect(0, 287, pageW, 10, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(255, 255, 255);
+    doc.text('rostock-auto-mieten.de | Josef Czerwinski | +49 176 75192451', margin, 293);
+    doc.text('Seite ' + i + ' / ' + pageCount, pageW - margin, 293, { align: 'right' });
+  }
+
+  return doc.output('datauristring').split(',')[1];
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uebergabeprotokoll - rostock-auto-mieten.de</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+.page-wrap { padding-top: 64px; }
+.form-page { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+.form-section { background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 2rem; margin-bottom: 1.5rem; }
+.form-section-alt { background: var(--paper-dark); border: 1px solid var(--border); border-radius: 6px; padding: 2rem; margin-bottom: 1.5rem; }
+.form-section-title { font-family: "Playfair Display", serif; font-size: 1.05rem; font-weight: 700; color: var(--accent); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
+.form-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 600px) { .form-cols { grid-template-columns: 1fr; } }
+.page-title { font-family: "Playfair Display", serif; font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; color: var(--ink); margin-bottom: 0.5rem; }
+.page-intro { font-size: 0.95rem; color: var(--ink-soft); line-height: 1.7; margin-bottom: 2rem; max-width: 640px; }
+/* Tank selector */
+.tank-selector { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.tank-btn { flex: 1; min-width: 70px; padding: 0.65rem 0.5rem; border: 1.5px solid var(--border); border-radius: 4px; background: var(--paper); font-family: inherit; font-size: 0.9rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; transition: all 0.15s; }
+.tank-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tank-btn.active { background: var(--accent); border-color: var(--accent); color: var(--white); font-weight: 600; }
+/* Photo preview */
+.photo-preview { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.photo-preview img { width: 90px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); }
+/* Signature */
+.sig-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 600px) { .sig-pair { grid-template-columns: 1fr; } }
+.sig-block label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 0.5rem; }
+.sig-wrap { border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--paper); position: relative; overflow: hidden; }
+canvas.sig-canvas { width: 100%; height: 140px; display: block; touch-action: none; }
+.sig-clear { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: 1px solid var(--border); border-radius: 3px; padding: 0.25rem 0.6rem; font-size: 0.75rem; color: var(--ink-muted); cursor: pointer; }
+.sig-clear:hover { border-color: var(--accent); color: var(--accent); }
+#msg { padding: 1rem 1.5rem; border-radius: 6px; font-size: 0.9rem; font-weight: 500; display: none; margin-top: 1rem; }
+#msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+#msg.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-brand">Autovermietung Rostock</a>
+  <ul class="nav-links">
+    <li><a href="index.html#fahrzeug">Fahrzeug</a></li>
+    <li><a href="index.html#preise">Preise</a></li>
+    <li><a href="wochenende.html">Wochenende</a></li>
+    <li><a href="flughafen.html">Flughafen</a></li>
+    <li><a href="index.html#abholort">Standort</a></li>
+    <li><a href="index.html#anfrage" class="nav-cta">Anfrage senden</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="form-page">
+    <p class="section-label">Dokument</p>
+    <h1 class="page-title">Uebergabeprotokoll</h1>
+    <div class="divider"></div>
+    <p class="page-intro">Dieses Protokoll wird bei der Fahrzeuguebergabe gemeinsam mit dem Mieter ausgefuellt. Beide Parteien unterschreiben digital; das PDF wird direkt heruntergeladen.</p>
+
+    <form id="protokollForm" novalidate>
+      <!-- KOPFDATEN -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Kopfdaten
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="mietername">Name des Mieters *</label>
+            <input type="text" id="mietername" name="mietername" required autocomplete="name" placeholder="Vorname Nachname">
+          </div>
+          <div class="form-group">
+            <label for="uebergabedatum">Datum der Uebergabe *</label>
+            <input type="date" id="uebergabedatum" name="uebergabedatum" required value="2026-04-08">
+          </div>
+        </div>
+      </div>
+
+      <!-- FAHRZEUGZUSTAND -->
+      <div class="form-section-alt">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Fahrzeugzustand bei Uebergabe
+        </div>
+        <div class="form-cols">
+          <div class="form-group">
+            <label for="kmstand">Kilometerstand *</label>
+            <input type="number" id="kmstand" name="kmstand" required min="0" step="1" placeholder="z.B. 87432">
+          </div>
+          <div class="form-group">
+            <label for="kraftstoff">Kraftstoff</label>
+            <input type="text" id="kraftstoff" name="kraftstoff" value="Benzin Super" readonly style="background:var(--paper-dark);">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tankstand bei Uebergabe *</label>
+          <div class="tank-selector" id="tankSelector">
+            <button type="button" class="tank-btn" data-value="1/4">1/4</button>
+            <button type="button" class="tank-btn" data-value="1/2">1/2</button>
+            <button type="button" class="tank-btn" data-value="3/4">3/4</button>
+            <button type="button" class="tank-btn" data-value="Voll">Voll</button>
+          </div>
+          <input type="hidden" id="tankstand" name="tankstand" required>
+        </div>
+      </div>
+
+      <!-- SCHÄDEN -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Vorhandene Schaeden
+        </div>
+        <div class="form-group">
+          <label for="schaeden">Schaeden / Anmerkungen *</label>
+          <textarea id="schaeden" name="schaeden" required rows="4" placeholder="Kratzer an der hinteren Stossstange (ca. 5 cm) – oder: Keine"></textarea>
+        </div>
+      </div>
+
+      <!-- FOTOS -->
+      <div class="form-section-alt">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Fotos (max. 5)
+        </div>
+        <div class="form-group">
+          <label for="fotos">Fahrzeugfotos aufnehmen oder auswaehlen</label>
+          <input type="file" id="fotos" name="fotos" accept="image/*" multiple capture="environment" style="font-size:0.9rem;">
+          <p style="font-size:0.78rem;color:var(--ink-muted);margin-top:0.4rem;">Auf Mobilgeraeten wird direkt die Kamera geoeffnet. Max. 5 Fotos.</p>
+        </div>
+        <div class="photo-preview" id="photoPreview"></div>
+      </div>
+
+      <!-- UNTERSCHRIFTEN -->
+      <div class="form-section">
+        <div class="form-section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Unterschriften
+        </div>
+        <div class="sig-pair">
+          <div class="sig-block">
+            <label>Unterschrift Vermieter (Josef Czerwinski) *</label>
+            <div class="sig-wrap">
+              <canvas id="sigVermieter" class="sig-canvas"></canvas>
+              <button type="button" class="sig-clear" data-target="sigVermieter">Loeschen</button>
+            </div>
+          </div>
+          <div class="sig-block">
+            <label>Unterschrift Mieter *</label>
+            <div class="sig-wrap">
+              <canvas id="sigMieter" class="sig-canvas"></canvas>
+              <button type="button" class="sig-clear" data-target="sigMieter">Loeschen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <button type="submit" class="btn btn-primary form-submit" id="submitBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Protokoll erstellen &amp; herunterladen
+      </button>
+      <div id="msg"></div>
+
+    </form>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>rostock-auto-mieten.de</strong> &mdash; Josef Czerwinski &middot; Ulmenstrasse 2, 18057 Rostock</p>
+  <p>Tel: <a href="tel:+4917675192451">+49 176 75192451</a> &middot; E-Mail: <a href="mailto:josefczerwi@t-online.de">josefczerwi@t-online.de</a></p>
+  <p style="margin-top:0.5rem;"><a href="index.html">Zurueck zur Startseite</a></p>
+</footer>
+
+<script>
+// Tank selector
+let selectedTank = '';
+document.querySelectorAll('.tank-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tank-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedTank = btn.dataset.value;
+    document.getElementById('tankstand').value = selectedTank;
+  });
+});
+
+// Photo preview (max 5)
+document.getElementById('fotos').addEventListener('change', function() {
+  const preview = document.getElementById('photoPreview');
+  preview.innerHTML = '';
+  const files = Array.from(this.files).slice(0, 5);
+  if (this.files.length > 5) {
+    this.value = '';
+    alert('Maximal 5 Fotos erlaubt. Bitte erneut auswaehlen.');
+    return;
+  }
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+// Signature pads
+const pads = {};
+['sigVermieter', 'sigMieter'].forEach(id => {
+  const canvas = document.getElementById(id);
+  pads[id] = new SignaturePad(canvas, {
+    backgroundColor: 'rgba(248,246,241,1)',
+    penColor: '#1a1a1a',
+    minWidth: 1,
+    maxWidth: 2.5
+  });
+});
+
+function resizeAll() {
+  ['sigVermieter', 'sigMieter'].forEach(id => {
+    const canvas = document.getElementById(id);
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    pads[id].clear();
+  });
+}
+window.addEventListener('resize', resizeAll);
+window.addEventListener('load', resizeAll);
+
+document.querySelectorAll('.sig-clear').forEach(btn => {
+  btn.addEventListener('click', () => pads[btn.dataset.target].clear());
+});
+
+// Submit
+document.getElementById('protokollForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const msg = document.getElementById('msg');
+  msg.className = '';
+  msg.style.display = 'none';
+
+  if (!selectedTank) {
+    msg.textContent = 'Bitte Tankstand auswaehlen.';
+    msg.className = 'error';
+    return;
+  }
+  if (pads.sigVermieter.isEmpty()) {
+    msg.textContent = 'Bitte Unterschrift des Vermieters leisten.';
+    msg.className = 'error';
+    return;
+  }
+  if (pads.sigMieter.isEmpty()) {
+    msg.textContent = 'Bitte Unterschrift des Mieters leisten.';
+    msg.className = 'error';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Wird erstellt ...';
+
+  try {
+    // collect photo data URLs
+    const photoFiles = Array.from(document.getElementById('fotos').files).slice(0, 5);
+    const photoDataURLs = await Promise.all(photoFiles.map(f => new Promise(res => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.readAsDataURL(f);
+    })));
+
+    await generateProtokollPDF(
+      pads.sigVermieter.toDataURL('image/png'),
+      pads.sigMieter.toDataURL('image/png'),
+      photoDataURLs
+    );
+
+    msg.textContent = 'Protokoll erfolgreich erstellt und heruntergeladen.';
+    msg.className = 'success';
+  } catch(err) {
+    msg.textContent = 'Fehler: ' + err.message;
+    msg.className = 'error';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Protokoll erstellen &amp; herunterladen';
+});
+
+async function generateProtokollPDF(sigV, sigM, photos) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW = 210, margin = 20;
+  const get = id => document.getElementById(id).value.trim();
+  const formatDate = s => s ? s.split('-').reverse().join('.') : '';
+
+  let y = 0;
+
+  // Header
+  doc.setFillColor(43, 74, 122);
+  doc.rect(0, 0, pageW, 38, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(255, 255, 255);
+  doc.text('UEBERGABEPROTOKOLL', margin, 20);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('rostock-auto-mieten.de | Josef Czerwinski', margin, 28);
+  doc.text('Datum: ' + formatDate(get('uebergabedatum')), pageW - margin, 28, { align: 'right' });
+  y = 50;
+
+  const drawInfoBox = (title, rows) => {
+    const h = 6 + rows.length * 7 + 10;
+    doc.setFillColor(245, 243, 238);
+    doc.setDrawColor(216, 210, 197);
+    doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(43, 74, 122);
+    doc.text(title.toUpperCase(), margin + 4, y + 6);
+    rows.forEach((row, i) => {
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(120, 120, 120);
+      doc.text(row[0], margin + 4, y + 14 + i * 7);
+      doc.setFontSize(8.5);
+      doc.setTextColor(26, 26, 26);
+      doc.text(row[1], margin + 4 + 38, y + 14 + i * 7);
+    });
+    y += h + 5;
+  };
+
+  // Fahrzeugdaten
+  drawInfoBox('Fahrzeugdaten', [
+    ['Fahrzeug', 'KIA Venga 2014'],
+    ['Kennzeichen', 'HRO-JC 123'],
+    ['Vermieter', 'Josef Czerwinski, Ulmenstrasse 2, 18057 Rostock'],
+  ]);
+
+  // Mieterdaten + Zustand
+  drawInfoBox('Mieterdaten & Zustand', [
+    ['Mieter', get('mietername')],
+    ['Datum', formatDate(get('uebergabedatum'))],
+    ['Kilometerstand', get('kmstand') + ' km'],
+    ['Tankstand', get('tankstand')],
+    ['Kraftstoff', get('kraftstoff')],
+  ]);
+
+  // Schaeden
+  const schaeden = get('schaeden') || 'Keine';
+  doc.setFillColor(245, 243, 238);
+  doc.setDrawColor(216, 210, 197);
+  const schLines = doc.splitTextToSize(schaeden, pageW - margin * 2 - 8);
+  const schH = 6 + schLines.length * 6 + 12;
+  doc.roundedRect(margin, y, pageW - margin * 2, schH, 2, 2, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(43, 74, 122);
+  doc.text('VORHANDENE SCHAEDEN / ANMERKUNGEN', margin + 4, y + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(26, 26, 26);
+  schLines.forEach((line, i) => {
+    doc.text(line, margin + 4, y + 14 + i * 6);
+  });
+  y += schH + 5;
+
+  // Photos
+  if (photos.length > 0) {
+    if (y > 180) { doc.addPage(); y = 20; }
+    doc.setFillColor(43, 74, 122);
+    doc.roundedRect(margin, y, pageW - margin * 2, 7, 1, 1, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(255, 255, 255);
+    doc.text('FOTOS', margin + 4, y + 5);
+    y += 11;
+
+    const photoW = (pageW - margin * 2 - 10) / 3;
+    const photoH = photoW * 0.65;
+    photos.forEach((dataUrl, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      if (col === 0 && row > 0) y += photoH + 5;
+      if (y + photoH > 275) { doc.addPage(); y = 20; }
+      try {
+        doc.addImage(dataUrl, 'JPEG', margin + col * (photoW + 5), y, photoW, photoH);
+      } catch(e) {
+        try { doc.addImage(dataUrl, 'PNG', margin + col * (photoW + 5), y, photoW, photoH); } catch(e2) {}
+      }
+    });
+    const lastRow = Math.floor((photos.length - 1) / 3);
+    y += photoH + 8;
+  }
+
+  // Signatures side by side
+  if (y > 220) { doc.addPage(); y = 20; }
+  const sigW = (pageW - margin * 2 - 10) / 2;
+  const sigH = 40;
+
+  const drawSigBox = (x, w, title, sigImg, name) => {
+    doc.setFillColor(248, 246, 241);
+    doc.setDrawColor(216, 210, 197);
+    doc.roundedRect(x, y, w, sigH, 2, 2, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(43, 74, 122);
+    doc.text(title.toUpperCase(), x + 3, y + 6);
+    try { doc.addImage(sigImg, 'PNG', x + 3, y + 8, w - 6, sigH - 18); } catch(e) {}
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(80, 80, 80);
+    doc.text(name + ' | ' + new Date().toLocaleDateString('de-DE'), x + 3, y + sigH - 3);
+  };
+
+  drawSigBox(margin, sigW, 'Vermieter – Josef Czerwinski', sigV, 'Josef Czerwinski');
+  drawSigBox(margin + sigW + 10, sigW, 'Mieter – ' + get('mietername'), sigM, get('mietername'));
+  y += sigH + 8;
+
+  // Footer
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFillColor(43, 74, 122);
+    doc.rect(0, 287, pageW, 10, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(255, 255, 255);
+    doc.text('rostock-auto-mieten.de | Josef Czerwinski | +49 176 75192451', margin, 293);
+    doc.text('Seite ' + i + ' / ' + pageCount, pageW - margin, 293, { align: 'right' });
+  }
+
+  const name = get('mietername').toLowerCase().replace(/\s+/g, '-');
+  doc.save('protokoll-' + name + '-' + get('uebergabedatum') + '.pdf');
+}
+</script>
+</body>
+</html>
